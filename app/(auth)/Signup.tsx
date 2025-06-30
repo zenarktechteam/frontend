@@ -1,14 +1,15 @@
-
 import { Colors } from '@/Styles/GlobalColors';
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Animated, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import MentalHealthIllustration from './MentalHealthIllustration';
 import { useRouter } from 'expo-router';
 
-const Login = () => {
+const Signup = () => {
   const router = useRouter();
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,7 +19,7 @@ const Login = () => {
   const feedbackAnim = useRef(new Animated.Value(0)).current;
 
   // Email regex
-  const emailRegex = /^[^\s@]+@[^^\s@]+\.[^\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   // Password regex: min 8 chars, upper, lower, number, special
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).{8,}$/;
 
@@ -41,39 +42,60 @@ const Login = () => {
     }
   }, [error, success]);
 
-  const handleLogin = () => {
+  const handleSignup = () => {
     setError('');
     setSuccess('');
     setLoading(true);
     setTimeout(() => { // simulate network
+      // Name validation
+      if (!name || name.trim().length < 2) {
+        setError('Please enter your full name (at least 2 characters).');
+        setLoading(false);
+        return;
+      }
+      // Email validation
       if (!email || !emailRegex.test(email)) {
         setError('Please enter a valid email address.');
         setLoading(false);
         return;
       }
+      // Password validation
       if (!passwordRegex.test(password)) {
         setError('Password must be at least 8 characters and include uppercase, lowercase, number, and special character.');
         setLoading(false);
         return;
       }
-      setSuccess('Welcome back to Zenark!');
+      // Confirm password
+      if (password !== confirmPassword) {
+        setError('Passwords do not match.');
+        setLoading(false);
+        return;
+      }
+      // All good
+      setSuccess('Signup successful! Welcome to Zenark.');
       setError('');
       setLoading(false);
     }, 900);
-    // TODO: Add login API logic here
   };
 
   return (
     <View style={styles.container}>
       <Animated.View style={[styles.card, { opacity: cardOpacity }]}>  
         <MentalHealthIllustration style={styles.illustration} />
-        <Text style={styles.heading}>Welcome back to Zenark</Text>
-        <Text style={styles.subheading}>We're glad to see you again. Log in to continue your mental wellness journey.</Text>
-        <Text style={styles.title}>Sign in to your account</Text>
+        <Text style={styles.heading}>Welcome to Zenark</Text>
+        <Text style={styles.subheading}>Your safe space for mental wellness begins here. Sign up to start your journey.</Text>
+        <Text style={styles.title}>Create your account</Text>
         <Animated.View style={{ opacity: feedbackAnim }}>
           {error ? <Text style={styles.error}>{error}</Text> : null}
           {success ? <Text style={styles.success}>{success}</Text> : null}
         </Animated.View>
+        <TextInput
+          style={styles.input}
+          placeholder="Full Name"
+          placeholderTextColor={Colors.blackColor + '99'}
+          value={name}
+          onChangeText={setName}
+        />
         <TextInput
           style={styles.input}
           placeholder="Email"
@@ -92,10 +114,18 @@ const Login = () => {
           secureTextEntry
         />
         <Text style={styles.passwordHint}>Password must be at least 8 characters, with upper, lower, number, and special character.</Text>
-        <TouchableOpacity style={[styles.button, loading && styles.buttonDisabled]} onPress={handleLogin} activeOpacity={0.85} disabled={loading}>
-          {loading ? <ActivityIndicator color={Colors.whiteColor} /> : <Text style={styles.buttonText}>Login</Text>}
+        <TextInput
+          style={styles.input}
+          placeholder="Confirm Password"
+          placeholderTextColor={Colors.blackColor + '99'}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          secureTextEntry
+        />
+        <TouchableOpacity style={[styles.button, loading && styles.buttonDisabled]} onPress={handleSignup} activeOpacity={0.85} disabled={loading}>
+          {loading ? <ActivityIndicator color={Colors.whiteColor} /> : <Text style={styles.buttonText}>Sign Up</Text>}
         </TouchableOpacity>
-        <Text style={styles.footerText}>Don't have an account? <Text style={styles.link} onPress={() => router.replace('/(auth)/Signup')}>Sign Up</Text></Text>
+        <Text style={styles.footerText}>Already have an account? <Text style={styles.link} onPress={() => router.replace('/(auth)/Login')}>Login</Text></Text>
       </Animated.View>
     </View>
   );
@@ -227,5 +257,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Login;
-
+export default Signup;
